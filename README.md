@@ -1,14 +1,14 @@
 
 <img src="https://github.com/mtagliazucchi/KDExpress/blob/main/KDExpress_logo.png" width="200" alt="KDExpress Logo"/>
+Fast Kernel Density Estimation (KDE) using a Fast Fourier Transform. Writen in JAX (JIT+GPU support+AD).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
 [![JAX](https://img.shields.io/badge/JAX-compatible-red)](https://github.com/google/jax)
 
-Fast Kernel Density Estimation (KDE) using a Fast Fourier Transform. Writen in JAX (JIT+GPU support+AD) and  inspired by [KernelDensity.jl](https://github.com/JuliaStats/KernelDensity.jl).
 
 ## Features
-- **FFT-accelerated KDE**:
+- **FFT-accelerated KDE** (inspired by [KernelDensity.jl](https://github.com/JuliaStats/KernelDensity.jl):
   - `fft_kde1d`: 1D KDE with FFT convolution (requires regular grid)
   - `fft_kde2d`: 2D KDE with FFT convolution (requires regular grid)
   - `fft_kde3d`: 3D KDE with FFT convolution (requires regular grid)
