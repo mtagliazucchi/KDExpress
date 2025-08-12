@@ -1,4 +1,4 @@
-| <img src="https://github.com/mtagliazucchi/KDExpress/blob/main/KDExpress_logo.png" width="200" alt="KDExpress Logo" style="vertical-align: middle;"/> | <h1>KDExpress</h1>Fast Kernel Density Estimation (KDE) using the Fast Fourier Transform and JAX (JIT+GPU support+AD).<br><br>[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/) [![JAX](https://img.shields.io/badge/JAX-compatible-red)](https://github.com/google/jax) |
+| <img src="https://github.com/mtagliazucchi/KDExpress/blob/main/KDExpress_logo.png" width="250" alt="KDExpress Logo" style="vertical-align: middle;"/> | <h1>KDExpress</h1>Fast Kernel Density Estimation (KDE) using the Fast Fourier Transform and JAX (JIT+GPU support+AD).<br><br>[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/) [![JAX](https://img.shields.io/badge/JAX-compatible-red)](https://github.com/google/jax) |
 | --- | --- |
 
 
