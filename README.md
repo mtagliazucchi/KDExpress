@@ -1,17 +1,14 @@
-<table>
-  <tr>
-    <td valign="center">
-      <img src="https://raw.githubusercontent.com/mtagliazucchi/KDExpress/main/KDExpress_logo.png" width="200" alt="KDExpress Logo"/>
-    </td>
-    <td valign="center">
-      <h1>KDExpress</h1>
-      Kernel Density Estimation accelerated using the Fast Fourier Transform and JAX (JIT+GPU support+AD).<br><br>
-      [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-      [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
-      [![JAX](https://img.shields.io/badge/JAX-compatible-red)](https://github.com/google/jax)
-    </td>
-  </tr>
-</table>
+<div style="display: flex; align-items: center;">
+  <div>
+    <img src="https://raw.githubusercontent.com/mtagliazucchi/KDExpress/main/KDExpress_logo.png" width="200" alt="KDExpress Logo"/>
+  </div>
+  <div style="margin-left: 20px;">
+    Fast Kernel Density Estimation (KDE) using a Fast Fourier Transform. Written in JAX (JIT+GPU support+AD).<br><br>
+    [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+    [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
+    [![JAX](https://img.shields.io/badge/JAX-compatible-red)](https://github.com/google/jax)
+  </div>
+</div>
 
 
 ## Features
