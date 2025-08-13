@@ -75,16 +75,15 @@ def fft_kde1d(points, data, weights=None, bw=None, bin_edges=None):
   """
   # Check points are equally spaced
   grid_step = points[1] - points[0]
-
-  #jax.debug.callback(
-  #  lambda x: print("Warning: Points are not equally spaced") if not x else None,
-  #  jnp.allclose(jnp.diff(points), grid_step, atol=1e-6)
-  #) slow down a lot the gpu usage
+  jax.debug.callback(
+    lambda x: print("Warning: Points are not equally spaced") if not x else None,
+    jnp.allclose(jnp.diff(points), grid_step, atol=1e-6)
+  )
 
   # Normalize weights
   if weights is None:
     weights = jnp.ones_like(data)
-  # assert len(weights) == len(data), "Weights must match data lenght." #  slow down a lot the gpu usage
+  assert len(weights) == len(data), "Weights must match data lenght."
   weights /= jnp.sum(weights)
 
   # Build histogram edges if necessary
@@ -101,9 +100,9 @@ def fft_kde1d(points, data, weights=None, bw=None, bin_edges=None):
 
   # FFT-based convolution smoothing
   freqs = jnp.fft.fftfreq(len(pdf_at_points), d=grid_step)
-  fft_pdf_at_points = jnp.fft.fft(pdf_at_points)
   fft_kernel = cf_gaussian_kernel_1d(2 * jnp.pi * freqs, bw)
-  fft_kde = fft_pdf_at_points* fft_kernel  # Frequency-domain smoothing -> KDE in frequency domain
+  fft_pdf_at_points = jnp.fft.fft(pdf_at_points)
+  fft_kde = fft_pdf_at_points * fft_kernel  # Frequency-domain smoothing -> KDE in frequency domain
   kde = jnp.fft.ifft(fft_kde).real # KDE in "time" domanin
 
   # Mask negative value and normalize

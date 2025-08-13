@@ -66,10 +66,10 @@ def fft_kde2d(points_x, points_y, data, weights=None, bw=None, bin_edges=None):
   grid_steps = []
   for points in [points_x, points_y]:
     grid_step = points[1] - points[0]
-    jax.debug.callback(
-      lambda x: print("Warning: Points are not equally spaced") if not x else None,
-      jnp.allclose(jnp.diff(points), grid_step, atol=1e-6)
-    )
+    #jax.debug.callback(
+    #  lambda x: print("Warning: Points are not equally spaced") if not x else None,
+    #  jnp.allclose(jnp.diff(points), grid_step, atol=1e-6)
+    # ) # slow down a lot the gpu usage
     grid_steps.append(grid_step)
 
   assert data.shape[1] == 2, "Data must be a (N_samples, 2) Array"
@@ -77,8 +77,7 @@ def fft_kde2d(points_x, points_y, data, weights=None, bw=None, bin_edges=None):
   # Normalize weights
   if weights is None:
     weights = jnp.ones_like(data)
-  else:
-    assert len(weights) == len(data), "Weights lenght must match data lenght."
+  # assert len(weights) == len(data), "Weights lenght must match data lenght." # slow down gpu usage
   weights /= jnp.sum(weights)
 
   # Build histogram edges if necessary
@@ -179,10 +178,10 @@ def fft_kde3d(points_x, points_y, points_z, data, weights=None, bw=None, bin_edg
   grid_steps = []
   for points in (points_x, points_y, points_z):
     grid_step = points[1] - points[0]
-    jax.debug.callback(
-      lambda x: print("Warning: Points are not equally spaced") if not x else None,
-      jnp.allclose(jnp.diff(points), grid_step, atol=1e-6)
-    )
+    # jax.debug.callback(
+    #  lambda x: print("Warning: Points are not equally spaced") if not x else None,
+    #  jnp.allclose(jnp.diff(points), grid_step, atol=1e-6)
+    # ) # slow down gpu usgae
     grid_steps.append(grid_step)
 
   assert data.shape[1] == 3, "Data must be shape (N_samples, 3)"
@@ -190,8 +189,7 @@ def fft_kde3d(points_x, points_y, points_z, data, weights=None, bw=None, bin_edg
   # Normalize weights
   if weights is None:
     weights = jnp.ones(data.shape[0])
-  else:
-    assert len(weights) == len(data), "Weights length must match data"
+  # assert len(weights) == len(data), "Weights length must match data" # slow down gpu usgae
   weights /= jnp.sum(weights)
 
   # Build histogram edges
