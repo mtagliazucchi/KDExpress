@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="KDExpress_logo.png" alt="KDExpress Logo" style="max-width:75%; width:100px; min-width:100px;" />
+  <img src="KDExpress_logo.png" alt="KDExpress Logo" style="max-width:100%; width:320px; min-width:200px;" />
 </p>
 
 <p align="center">
