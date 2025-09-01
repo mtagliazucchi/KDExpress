@@ -1,4 +1,4 @@
-| <img src="https://github.com/mtagliazucchi/KDExpress/blob/main/KDExpress_logo.png" width="250" alt="KDExpress Logo" style="vertical-align: middle;"/> | <h1>KDExpress</h1>Kernel Density Estimation accelerated with Fast Fourier Transform and JAX (JIT+GPU support+AD).<br><br>[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/) [![JAX](https://img.shields.io/badge/JAX-compatible-red)](https://github.com/google/jax) |
+| <img src="KDExpress_logo.png" alt="KDExpress Logo" style="max-width:100%; width:320px; min-width:200px; display:block;" /> | <h1 style="margin:0;">KDExpress</h1>Kernel Density Estimation accelerated with Fast Fourier Transform and JAX (JIT+GPU support+AD).<br><br>[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/) [![JAX](https://img.shields.io/badge/JAX-compatible-red)](https://github.com/google/jax) |
 | --- | --- |
 
 
@@ -17,17 +17,37 @@
   - Silverman's rule (`silverman_bw1d/2d/3d`)
 
 ## Installation
-You must install **JAX** separately following the instructions at: [https://github.com/jax-ml/jax](https://github.com/jax-ml/jax).
-To get the `KDExpress` you can simply clone this repo
 
-```bash
-git clone https://github.com/mtagliazucchi/KDExpress
-```
-and then use it as
-```python
-import sys; sys.path.append("path/to/KDExpress")
-from KDExpress import fft_kde1d
-```
+1. Install **JAX** following the instructions at: [https://github.com/jax-ml/jax](https://github.com/jax-ml/jax), e.g
+
+    ```bash
+    pip install "jax[cpu]" # For CPU-only version
+    ```
+    or
+    ```bash
+    pip install "jax[cuda12]" # For GPU support (CUDA)
+    ```
+
+2. Clone the `KDExpress` repo
+
+    ```bash
+    git clone https://github.com/mtagliazucchi/KDExpress
+    ```
+
+3. Install the code
+
+    a. Editable install:
+    ```bash
+    cd KDExpress
+    pip install -e .
+    ```
+
+    b. Or use it ad-hoc:
+    ```python
+    import sys; sys.path.append("/path/to/KDExpress")
+    from KDExpress import fft_kde1d
+    ```
+
 ## Usage and benchmarks
 See the [examples](https://github.com/mtagliazucchi/KDExpress/examples) folder.
 

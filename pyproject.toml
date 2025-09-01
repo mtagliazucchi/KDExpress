@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "KDExpress"
+version = "0.1.0"
+description = "Fast Kernel Density Estimation with FFT and JAX"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+  {name = "Matteo Tagliazucchi", email = "matteo.tagliazucchi2@unibo.it"}
+]
+
+[project.urls]
+Homepage = "https://github.com/mtagliazucchi/KDExpress"
+Repository = "https://github.com/mtagliazucchi/KDExpress"
+Documentation = "https://github.com/mtagliazucchi/KDExpress#readme"
+
+[tool.setuptools]
+packages = ["KDExpress"]
+package-dir = {"" = "src"}
+
+[project.optional-dependencies]
+examples = [
+  "matplotlib>=3.5",
+  "jax>=0.4.0",
+  "jaxlib>=0.4.0",
+]
