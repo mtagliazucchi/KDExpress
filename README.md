@@ -1,5 +1,16 @@
-| <img src="KDExpress_logo.png" alt="KDExpress Logo" style="max-width:100%; width:320px; min-width:200px; display:block;" /> | <h1 style="margin:0;">KDExpress</h1>Kernel Density Estimation accelerated with Fast Fourier Transform and JAX (JIT+GPU support+AD).<br><br>[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/) [![JAX](https://img.shields.io/badge/JAX-compatible-red)](https://github.com/google/jax) |
-| --- | --- |
+<p align="center">
+  <img src="KDExpress_logo.png" alt="KDExpress Logo" style="max-width:75%; width:100px; min-width:100px;" />
+</p>
+
+<p align="center">
+  Kernel Density Estimation accelerated with Fast Fourier Transform and JAX (JIT+GPU support+AD).
+</p>
+
+<p align="center">
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python"></a>
+  <a href="https://github.com/google/jax"><img src="https://img.shields.io/badge/JAX-compatible-red" alt="JAX"></a>
+</p>
 
 
 ## Features
