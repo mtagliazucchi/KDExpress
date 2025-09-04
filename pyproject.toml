@@ -4,13 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "KDExpress"
-version = "0.1.0"
+version = "0.2.0"
 description = "Fast Kernel Density Estimation with FFT and JAX"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
   {name = "Matteo Tagliazucchi", email = "matteo.tagliazucchi2@unibo.it"}
+]
+dependencies = [
+  "plum-dispatch",
 ]
 
 [project.urls]

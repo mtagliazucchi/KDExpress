@@ -19,8 +19,13 @@ except ImportError:
   )
 
 # Core exports
-from .univariate import (
+from .hist import (
   build_hist_edges,
+  hist1d,
+  histnd
+)
+from .univariate import (
+  scott_bw1d,
   silverman_bw1d,
   fft_kde1d,
   binned_kde1d

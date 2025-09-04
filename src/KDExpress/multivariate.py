@@ -1,7 +1,7 @@
 import jax
 import jax.numpy as jnp
-from .univariate import build_hist_edges, silverman_bw1d
-
+from .univariate import silverman_bw1d
+from .hist import build_hist_edges, histnd
 # ======================
 # 2D KDE IMPLEMENTATION
 # ======================
@@ -87,12 +87,7 @@ def fft_kde2d(points_x, points_y, data, weights=None, bw=None, bin_edges=None):
     assert len(bin_edges) == 2
 
   # Compute weighted histogram
-  pdf_at_points, _, _ = jnp.histogram2d(
-    data[:, 0], data[:, 1],
-    weights=weights,
-    bins=bin_edges,
-    density=True
-  )
+  pdf_at_points, _ = histnd(data, bin_edges, weights=weights, density=True)
 
   # Compute bandwidth if necessary
   if bw is None:
@@ -199,12 +194,7 @@ def fft_kde3d(points_x, points_y, points_z, data, weights=None, bw=None, bin_edg
     assert len(bin_edges) == 3
 
   # Compute weighted histogram
-  pdf_at_points, _ = jnp.histogramdd(
-    data,
-    bins=bin_edges,
-    weights=weights,
-    density=True
-  )
+  pdf_at_points, _ = histnd(data, bin_edges, weights=weights, density=True)
 
   # Compute bandwidth
   if bw is None:

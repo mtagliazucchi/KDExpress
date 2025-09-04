@@ -1,0 +1,6 @@
+plum-dispatch
+
+[examples]
+matplotlib>=3.5
+jax>=0.4.0
+jaxlib>=0.4.0
