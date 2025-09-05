@@ -142,20 +142,19 @@ def binned_kde1d(points,
 
   # Bw selection
   if bw is None:
-    bw = silverman_bw1d(data)# scott_bw1d(data, weights) #silverman_bw1d(data)
+    bw = scott_bw1d(data, weights)
 
   # Binning
-  data_min, data_max = jnp.min(data), jnp.max(data)
-  new_weights, new_data_edges = hist1d(data, int(nbins), weights = weights, density=False)
+  new_weights, new_data_edges = hist1d(data, nbins, weights=weights, density=False)
   new_weights /= jnp.sum(new_weights)
   new_data = 0.5*(new_data_edges[1:]+new_data_edges[:-1])
 
   # Compute "effective points" if requested -> useful if points extends much further away data support
   if cut_sigma_data is not None:
-    data_std = jnp.std(data)
+    data_min, data_max, data_std = jnp.min(data), jnp.max(data), jnp.std(data)
     lb = jnp.where(data_min-cut_sigma_data*data_std > jnp.min(points), data_min-cut_sigma_data*data_std, jnp.min(points))
     ub = jnp.where(data_max+cut_sigma_data*data_std < jnp.max(points), data_max+cut_sigma_data*data_std, jnp.max(points))
-    eff_points = jnp.linspace(lb, ub, len(points)//2) # guess it is okay...
+    eff_points = jnp.linspace(lb, ub, len(points)//3) # guess it is okay...
   else:
     eff_points = points
 
@@ -165,10 +164,7 @@ def binned_kde1d(points,
 
   # Calculate KDE
   kde = jnp.sum(new_weights * kernel_vals, axis=-1) / bw
-  if cut_sigma_data is not None:
-    return jnp.interp(points, eff_points, kde, left=0., right=0.)
-  else:
-    return kde
+  return jnp.interp(points, eff_points, kde, left=0., right=0.)
 
 @jax.jit
 def _epan_kernel(u):

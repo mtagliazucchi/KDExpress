@@ -24,11 +24,11 @@ def build_hist_edges(bin_centers):
 
 @jax.jit
 def searchsorted_linear_spacing(x, y):
-  min_val = jnp.min(x)
-  max_val = jnp.max(x)
-  n = len(x)-1
+  min_val = jnp.nanmin(x)
+  max_val = jnp.nanmax(x)
+  n = jnp.sum(~jnp.isnan(x))-1 # len(x)-1
   idx = jnp.floor((y - min_val) / (max_val-min_val) * n)
-  idx = jnp.clip(idx, 0, n - 1).astype(int)
+  idx = jnp.clip(idx, 0, n-1).astype(int)
   return idx
 
 @dispatch
@@ -46,7 +46,7 @@ def hist1d(data, bins:jnp.ndarray, weights=None, density:bool=False):
 
   # Apply density normalization if requested
   if density:
-    bin_widths = bins[1:] - bins[:-1]
+    bin_widths = bins[1] - bins[0]
     total_weight = jnp.sum(weights)
     bin_counts /= (bin_widths * total_weight)
 
@@ -67,7 +67,7 @@ def hist1d(data, bins:int, weights=None, density:bool=False):
 
   # Apply density normalization if requested
   if density:
-    bin_widths = bin_edges[1:] - bin_edges[:-1]
+    bin_widths = bin_edges[1] - bin_edges[0]
     total_weight = jnp.sum(weights)
     bin_counts /= (bin_widths * total_weight)
 
@@ -103,7 +103,6 @@ def histnd(data, bins:Union[int, List[int]], weights=None, density=False):
     bin_edges_by_dim.append(bin_edges)
 
   nbins = tuple(len(bin_edges) + 1 for bin_edges in bin_edges_by_dim)
-  dedges = [jnp.diff(bin_edges) for bin_edges in bin_edges_by_dim]
 
   xy = jnp.ravel_multi_index(tuple(bin_idx_by_dim), nbins, mode='clip')
   hist = jnp.bincount(xy, weights, length=math.prod(nbins))
@@ -112,10 +111,11 @@ def histnd(data, bins:Union[int, List[int]], weights=None, density=False):
   hist = hist[core]
 
   if density:
-    hist = hist.astype(sample.dtype)
+    dedges = [jnp.diff(bin_edges) for bin_edges in bin_edges_by_dim]
+    hist = hist.astype(data.dtype)
     hist /= hist.sum()
     for norm in jnp.ix_(*dedges):
-      hist /= norm
+      hist = jnp.where(~jnp.isnan(norm), hist / norm, hist)
 
   return hist, bin_edges_by_dim
 
@@ -140,7 +140,6 @@ def histnd(data, bins:List[jnp.ndarray], weights=None, density=False):
     bin_edges_by_dim.append(bin_edges[i])
 
   nbins = tuple(len(bin_edges) + 1 for bin_edges in bin_edges_by_dim)
-  dedges = [jnp.diff(bin_edges) for bin_edges in bin_edges_by_dim]
 
   xy = jnp.ravel_multi_index(tuple(bin_idx_by_dim), nbins, mode='clip')
   hist = jnp.bincount(xy, weights, length=math.prod(nbins))
@@ -149,9 +148,10 @@ def histnd(data, bins:List[jnp.ndarray], weights=None, density=False):
   hist = hist[core]
 
   if density:
+    dedges = [jnp.diff(bin_edges) for bin_edges in bin_edges_by_dim]
     hist = hist.astype(data.dtype)
     hist /= hist.sum()
     for norm in jnp.ix_(*dedges):
-      hist /= norm
+      hist = jnp.where(~jnp.isnan(norm), hist / norm, hist)
 
   return hist, bin_edges_by_dim
