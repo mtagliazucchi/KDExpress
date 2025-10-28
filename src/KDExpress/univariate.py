@@ -140,14 +140,15 @@ def binned_kde1d(points,
     1D array of density estimates at input points
   """
 
-  # Bw selection
-  if bw is None:
-    bw = scott_bw1d(data, weights)
 
   # Binning
   new_weights, new_data_edges = hist1d(data, nbins, weights=weights, density=False)
   new_weights /= jnp.sum(new_weights)
   new_data = 0.5*(new_data_edges[1:]+new_data_edges[:-1])
+
+  # Bw selection
+  if bw is None:
+    bw = scott_bw1d(new_data, new_weights)
 
   # Compute "effective points" if requested -> useful if points extends much further away data support
   if cut_sigma_data is not None:
