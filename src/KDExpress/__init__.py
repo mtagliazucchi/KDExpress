@@ -31,8 +31,10 @@ from .univariate import (
   binned_kde1d
 )
 from .multivariate import (
+  scott_bw2d,
   silverman_bw2d,
   fft_kde2d,
+  scott_bw3d,
   silverman_bw3d,
   fft_kde3d
 )
@@ -42,8 +44,10 @@ __all__ = [
   'silverman_bw1d',
   'fft_kde1d',
   'binned_kde1d',
+  'scott_bw2d',
   'silverman_bw2d',
   'fft_kde2d',
+  ' scott_bw3d',
   'silverman_bw3d',
   'fft_kde3d'
 ]

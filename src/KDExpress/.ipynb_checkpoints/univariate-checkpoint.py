@@ -1,27 +1,13 @@
 import jax
 import jax.numpy as jnp
 from functools import partial
+from .hist import build_hist_edges, hist1d
 
 # Common function
 
 @jax.jit
-def build_hist_edges(bin_centers):
-  """Compute histogram edges surrounding given bin centers.
-
-  Args:
-    bin_centers: Array of equally spaced bin center locations
-
-  Returns:
-    Array of edges between bins (length len(bin_centers)+1)
-  """
-  left_edge = jnp.array([bin_centers[0] - 0.5*(bin_centers[1]-bin_centers[0])])
-  right_edge = jnp.array([bin_centers[-1] + 0.5*(bin_centers[-1]-bin_centers[-2])])
-  inner_edges = 0.5*(bin_centers[1:]+bin_centers[:-1])
-  return jnp.concatenate([left_edge, inner_edges, right_edge])
-
-@jax.jit
 def silverman_bw1d(data, alpha=0.9):
-  """Silverman's rule of thumb bandwidth estimator for 2D datasets.
+  """Silverman's rule of thumb bandwidth estimator for 1D datasets.
 
   Args:
     data: 1D array of input data points
@@ -41,6 +27,29 @@ def silverman_bw1d(data, alpha=0.9):
           jnp.where(var_width == 0.0, 1.0, var_width),
           width)
   return alpha * width * (ndata ** -0.2)
+
+@jax.jit
+def weighted_std(data, weights):
+  mean = jnp.average(data, weights=weights)
+  variance = jnp.average((data - mean)**2, weights=weights)
+  return jnp.sqrt(variance)
+
+@jax.jit
+def scott_bw1d(data, weights):
+  """Scott's rule of thumb bandwidth estimator for 1D datasets.
+
+  Args:
+    data: 1D array of input data points
+    weights: 1D array of input weights
+
+  Returns:
+    Estimated optimal bandwidth
+  """
+  weights /= jnp.sum(weights)
+  neff = 1.0 / jnp.sum(jnp.power(weights, 2))
+  bw = jnp.power(neff, -1. / (1 + 4))
+  bw *= weighted_std(data, weights)
+  return bw
 
 # ======================
 # 1D KDE IMPLEMENTATION
@@ -75,33 +84,31 @@ def fft_kde1d(points, data, weights=None, bw=None, bin_edges=None):
   """
   # Check points are equally spaced
   grid_step = points[1] - points[0]
-  jax.debug.callback(
-    lambda x: print("Warning: Points are not equally spaced") if not x else None,
-    jnp.allclose(jnp.diff(points), grid_step, atol=1e-6)
-  )
+
+  #jax.debug.callback(
+  #  lambda x: print("Warning: Points are not equally spaced") if not x else None,
+  #  jnp.allclose(jnp.diff(points), grid_step, atol=1e-6)
+  #) slow down a lot the gpu usage
 
   # Normalize weights
   if weights is None:
     weights = jnp.ones_like(data)
-  assert len(weights) == len(data), "Weights must match data lenght."
-  weights /= jnp.sum(weights)
 
   # Build histogram edges if necessary
   if bin_edges is None:
     bin_edges = build_hist_edges(points)
 
   # Compute weighted histogram
-  pdf_at_points, _ = jnp.histogram(data, weights=weights,
-                                  bins=bin_edges, density=True)
+  pdf_at_points, _ = hist1d(data, bin_edges, weights=weights, density=True) # check density here
 
   # Compute bandwidth if necessary
   if bw is None:
-    bw = silverman_bw1d(data)
+    bw = scott_bw1d(data, weights)
 
   # FFT-based convolution smoothing
   freqs = jnp.fft.fftfreq(len(pdf_at_points), d=grid_step)
-  fft_kernel = cf_gaussian_kernel_1d(2 * jnp.pi * freqs, bw)
   fft_pdf_at_points = jnp.fft.fft(pdf_at_points)
+  fft_kernel = cf_gaussian_kernel_1d(2 * jnp.pi * freqs, bw)
   fft_kde = fft_pdf_at_points * fft_kernel  # Frequency-domain smoothing -> KDE in frequency domain
   kde = jnp.fft.ifft(fft_kde).real # KDE in "time" domanin
 
@@ -115,7 +122,7 @@ def fft_kde1d(points, data, weights=None, bw=None, bin_edges=None):
 # BINNED 1D KDE
 # ==============
 
-@partial(jax.jit, static_argnames=['kernel', 'nbins', 'cut_sigma_data'])
+@partial(jax.jit, static_argnames=['kernel', 'nbins'])
 def binned_kde1d(points,
   data,
   weights=None,
@@ -138,24 +145,23 @@ def binned_kde1d(points,
   Returns:
     1D array of density estimates at input points
   """
-  # Normalize weights
-  if weights is None:
-    weights = jnp.ones_like(data) / dataset.size
-  else:
-    weights = weights / jnp.sum(weights)
+
+
+  # Binning
+  new_weights, new_data_edges = hist1d(data, nbins, weights=weights, density=False)
+  new_weights /= jnp.sum(new_weights)
+  new_data = 0.5*(new_data_edges[1:]+new_data_edges[:-1])
 
   # Bw selection
   if bw is None:
-    bw = silverman_bw1d(data)
-
-  # Binning
-  new_weights, new_data_edges = jnp.histogram(data, weights=weights, bins=nbins)
-  new_data = 0.5*(new_data_edges[1:]+new_data_edges[:-1])
+    bw = scott_bw1d(new_data, new_weights)
 
   # Compute "effective points" if requested -> useful if points extends much further away data support
   if cut_sigma_data is not None:
-    min_data, max_data, std_data = jnp.min(data), jnp.max(data), jnp.std(data)
-    eff_points = jnp.linspace(min_data-cut_sigma_data*std_data, max_data+cut_sigma_data*std_data, len(points)//2) # guess it is okay...
+    data_min, data_max, data_std = jnp.min(data), jnp.max(data), jnp.std(data)
+    lb = jnp.where(data_min-cut_sigma_data*data_std > jnp.min(points), data_min-cut_sigma_data*data_std, jnp.min(points))
+    ub = jnp.where(data_max+cut_sigma_data*data_std < jnp.max(points), data_max+cut_sigma_data*data_std, jnp.max(points))
+    eff_points = jnp.linspace(lb, ub, len(points)//3) # guess it is okay...
   else:
     eff_points = points
 
@@ -165,10 +171,7 @@ def binned_kde1d(points,
 
   # Calculate KDE
   kde = jnp.sum(new_weights * kernel_vals, axis=-1) / bw
-  if cut_sigma_data is not None:
-    return jnp.interp(points, eff_points, kde)
-  else:
-    return kde
+  return jnp.interp(points, eff_points, kde, left=0., right=0.)
 
 @jax.jit
 def _epan_kernel(u):

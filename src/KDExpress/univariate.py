@@ -29,6 +29,12 @@ def silverman_bw1d(data, alpha=0.9):
   return alpha * width * (ndata ** -0.2)
 
 @jax.jit
+def weighted_std(data, weights):
+  mean = jnp.average(data, weights=weights)
+  variance = jnp.average((data - mean)**2, weights=weights)
+  return jnp.sqrt(variance)
+
+@jax.jit
 def scott_bw1d(data, weights):
   """Scott's rule of thumb bandwidth estimator for 1D datasets.
 
@@ -39,9 +45,10 @@ def scott_bw1d(data, weights):
   Returns:
     Estimated optimal bandwidth
   """
+  weights /= jnp.sum(weights)
   neff = 1.0 / jnp.sum(jnp.power(weights, 2))
   bw = jnp.power(neff, -1. / (1 + 4))
-  bw *= jnp.std(data)
+  bw *= weighted_std(data, weights)
   return bw
 
 # ======================
@@ -61,8 +68,32 @@ def cf_gaussian_kernel_1d(t, sigma):
   """
   return jnp.exp(-0.5*(t*sigma)**2)
 
+
 @jax.jit
-def fft_kde1d(points, data, weights=None, bw=None, bin_edges=None):
+def cf_epan_kernel_1d(t, sigma):
+    """Characteristic function of Epanechnikov kernel for FFT convolution.
+    
+    Args:
+        t: Frequency domain values
+        sigma: Bandwidth parameter
+    
+    Returns:
+        Fourier transform of scaled Epanechnikov kernel: K_sigma(u) = 1/sigma * K(u/sigma)
+    """
+    t_scaled = t * sigma
+    t_abs = jnp.abs(t_scaled)
+    
+    # Handle t = 0 separately
+    result = jnp.where(
+        t_abs < 1e-8,
+        1.0,  # φ(0) = 1
+        3.0 * (jnp.sin(t_scaled) - t_scaled * jnp.cos(t_scaled)) / (t_scaled**3)
+    )
+    
+    return result
+
+@partial(jax.jit, static_argnames=['kernel'])
+def fft_kde1d(points, data, weights=None, bw=None, kernel='gaussian', bin_edges=None):
   """Compute a 1D Kernel Density Estimation (KDE) using FFT-based Gaussian smoothing.
 
   Args:
@@ -86,7 +117,6 @@ def fft_kde1d(points, data, weights=None, bw=None, bin_edges=None):
   # Normalize weights
   if weights is None:
     weights = jnp.ones_like(data)
-  # assert len(weights) == len(data), "Weights must match data lenght." #  slow down a lot the gpu usage
 
   # Build histogram edges if necessary
   if bin_edges is None:
@@ -97,12 +127,17 @@ def fft_kde1d(points, data, weights=None, bw=None, bin_edges=None):
 
   # Compute bandwidth if necessary
   if bw is None:
-    bw = silverman_bw1d(data)
+    bw = scott_bw1d(data, weights)
+
+  if kernel == 'epan':
+    cf = cf_epan_kernel_1d
+  else:
+    cf = cf_gaussian_kernel_1d
 
   # FFT-based convolution smoothing
   freqs = jnp.fft.fftfreq(len(pdf_at_points), d=grid_step)
   fft_pdf_at_points = jnp.fft.fft(pdf_at_points)
-  fft_kernel = cf_gaussian_kernel_1d(2 * jnp.pi * freqs, bw)
+  fft_kernel = cf(2 * jnp.pi * freqs, bw)
   fft_kde = fft_pdf_at_points * fft_kernel  # Frequency-domain smoothing -> KDE in frequency domain
   kde = jnp.fft.ifft(fft_kde).real # KDE in "time" domanin
 

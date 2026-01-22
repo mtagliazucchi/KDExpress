@@ -1,6 +1,6 @@
 import jax
 import jax.numpy as jnp
-from .univariate import silverman_bw1d
+from .univariate import silverman_bw1d, weighted_std
 from .hist import build_hist_edges, histnd
 # ======================
 # 2D KDE IMPLEMENTATION
@@ -28,6 +28,35 @@ def silverman_bw2d(data, alpha=0.9):
     return width
 
   return jax.vmap(inner_routine, in_axes = (1,))(data)
+
+
+@jax.jit
+def scott_bw2d(data, weights):
+  """Scott's rule of thumb bandwidth estimator for 3D datasets.
+
+  Scott's rule in d-dimensions: h_i = n^{-1/(d+4)} * σ_i
+  For 2D: h_i = n^{-1/6} * σ_i
+
+  Args:
+    data: 2D array of shape (n_samples, 2)
+    weights: Optional weights for each data point
+
+  Returns:
+    Estimated optimal bandwidth for each dimension (32)
+  """
+
+  weights /= jnp.sum(weights)
+
+  # Calculate effective sample size
+  neff = 1.0 / jnp.sum(jnp.power(weights, 2))
+
+  # Scott's rule for 2D: n_eff^{-1/(2+4)} = n_eff^{-1/6}
+  bw = jnp.power(neff, -1.0 / 6.0)
+
+  # Calculate weighted standard deviation for each dimension
+  bw_factors = jax.vmap(weighted_std, in_axes=(1, None))(data, weights)
+  return bw * bw_factors
+
 
 @jax.jit
 def cf_gaussian_kernel_2d(tx, ty, sigma_x, sigma_y):
@@ -91,7 +120,7 @@ def fft_kde2d(points_x, points_y, data, weights=None, bw=None, bin_edges=None):
 
   # Compute bandwidth if necessary
   if bw is None:
-    bw = silverman_bw2d(data)
+    bw = scott_bw2d(data, weights)
   else:
     assert len(bin_edges) == 2
 
@@ -135,6 +164,34 @@ def silverman_bw3d(data, alpha=0.9):
     return width
 
   return jax.vmap(inner_routine, in_axes=(1,))(data)
+
+@jax.jit
+def scott_bw3d(data, weights):
+  """Scott's rule of thumb bandwidth estimator for 3D datasets.
+
+  Scott's rule in d-dimensions: h_i = n^{-1/(d+4)} * σ_i
+  For 2D: h_i = n^{-1/7} * σ_i
+
+  Args:
+    data: 2D array of shape (n_samples, 2)
+    weights: Optional weights for each data point
+
+  Returns:
+    Estimated optimal bandwidth for each dimension (32)
+  """
+
+  weights /= jnp.sum(weights)
+
+  # Calculate effective sample size
+  neff = 1.0 / jnp.sum(jnp.power(weights, 2))
+
+  # Scott's rule for 2D: n_eff^{-1/(2+3)} = n_eff^{-1/7}
+  bw = jnp.power(neff, -1.0 / 7.0)
+
+  # Calculate weighted standard deviation for each dimension
+  bw_factors = jax.vmap(weighted_std, in_axes=(1, None))(data, weights)
+  return bw * bw_factors
+
 
 @jax.jit
 def cf_gaussian_kernel_3d(tx, ty, tz, sigma_x, sigma_y, sigma_z):
@@ -198,7 +255,7 @@ def fft_kde3d(points_x, points_y, points_z, data, weights=None, bw=None, bin_edg
 
   # Compute bandwidth
   if bw is None:
-    bw = silverman_bw3d(data)
+    bw = scott_bw3d(data, weights)
   else:
     assert len(bw) == 3
 
