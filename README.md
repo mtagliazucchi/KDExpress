@@ -25,6 +25,7 @@
   - `binned_kde1d`: 1D KDE with data binning
 
 - **Bandwidth estimators**:
+  - Scott's rule (`scott_bw1d/2d/3d`)
   - Silverman's rule (`silverman_bw1d/2d/3d`)
 
 ## Installation
@@ -38,29 +39,33 @@
     ```bash
     pip install "jax[cuda12]" # For GPU support (CUDA)
     ```
+2. Install with `pip`
+   ```bash
+   pip install KDExpress
+   ```
 
-2. Clone the `KDExpress` repo
+3. Alternative way:
+    - Clone the `KDExpress` repo
+      ```bash
+      git clone https://github.com/mtagliazucchi/KDExpress
+      ```
+    - Install the code
 
-    ```bash
-    git clone https://github.com/mtagliazucchi/KDExpress
-    ```
-
-3. Install the code
-
-    a. Editable install:
-    ```bash
-    cd KDExpress
-    pip install -e .
-    ```
-
-    b. Or use it ad-hoc:
-    ```python
-    import sys; sys.path.append("/path/to/KDExpress")
-    from KDExpress import fft_kde1d
-    ```
+      a. Editable install:
+      ```bash
+      cd KDExpress
+      pip install -e .
+      ```
+  
+      b. Or use it ad-hoc:
+      ```python
+      import sys; sys.path.append("/path/to/KDExpress")
+      from KDExpress import fft_kde1d
+      ```
 
 ## Usage and benchmarks
 See the [examples](https://github.com/mtagliazucchi/KDExpress/examples) folder.
 
 ## License
 MIT © [Matteo Tagliazucchi](https://github.com/mtagliazucchi)
+

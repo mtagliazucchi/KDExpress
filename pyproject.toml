@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "KDExpress"
-version = "0.2.0"
+version = "1.0.0"
 description = "Fast Kernel Density Estimation with FFT and JAX"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -20,6 +20,9 @@ dependencies = [
 Homepage = "https://github.com/mtagliazucchi/KDExpress"
 Repository = "https://github.com/mtagliazucchi/KDExpress"
 Documentation = "https://github.com/mtagliazucchi/KDExpress#readme"
+
+[project.scripts]
+your-command = "your_package.cli:main"
 
 [tool.setuptools]
 packages = ["KDExpress"]

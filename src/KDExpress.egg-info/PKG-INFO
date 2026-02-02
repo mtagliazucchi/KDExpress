@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: KDExpress
-Version: 0.2.0
+Version: 1.0.0
 Summary: Fast Kernel Density Estimation with FFT and JAX
 Author-email: Matteo Tagliazucchi <matteo.tagliazucchi2@unibo.it>
 License: MIT
