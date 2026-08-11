@@ -7,5 +7,6 @@ src/KDExpress/univariate.py
 src/KDExpress.egg-info/PKG-INFO
 src/KDExpress.egg-info/SOURCES.txt
 src/KDExpress.egg-info/dependency_links.txt
+src/KDExpress.egg-info/entry_points.txt
 src/KDExpress.egg-info/requires.txt
 src/KDExpress.egg-info/top_level.txt

@@ -2,6 +2,11 @@
 
 All notable changes to KDExpress will be documented in this file.
 
+## [0.2.1] - 2026-08-11
+
+### Fixed
+- Numerical stability issues with Epanechnikov kernel in FFT-based KDE that were breaking automatic differentiation.
+
 ## [0.2.0] - 2025-09-03
 
 ### Added

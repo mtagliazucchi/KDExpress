@@ -82,15 +82,20 @@ def cf_epan_kernel_1d(t, sigma):
     """
     t_scaled = t * sigma
     t_abs = jnp.abs(t_scaled)
+    t2 = t_scaled**2
     
-    # Handle t = 0 separately
-    result = jnp.where(
-        t_abs < 1e-8,
-        1.0,  # φ(0) = 1
-        3.0 * (jnp.sin(t_scaled) - t_scaled * jnp.cos(t_scaled)) / (t_scaled**3)
-    )
+    # Taylor series for small values (avoid cancellation)
+    small_taylor = 1.0 - t2/10.0 + t2**2/280.0 - t2**3/15120.0 + t2**4/1330560.0
     
-    return result
+    # Exact formula for moderate values
+    exact = 3.0 * (jnp.sin(t_scaled) - t_scaled * jnp.cos(t_scaled)) / (t_scaled**3)
+    
+    # Use Taylor for very small values, exact for moderate, zero for large
+    result = jnp.where(t_abs < 0.01, small_taylor, exact)
+    result = jnp.where(t_abs > 20.0, 0.0, result)  # High-frequency cutoff
+    
+    return jnp.clip(result, 0.0, 1.0)
+
 
 @partial(jax.jit, static_argnames=['kernel'])
 def fft_kde1d(points, data, weights=None, bw=None, kernel='gaussian', bin_edges=None):
