@@ -84,17 +84,23 @@ def cf_epan_kernel_1d(t, sigma):
     t_abs = jnp.abs(t_scaled)
     t2 = t_scaled**2
     
-    # Taylor series for small values (avoid cancellation)
-    small_taylor = 1.0 - t2/10.0 + t2**2/280.0 - t2**3/15120.0 + t2**4/1330560.0
+    taylor = 1.0 - t2/10.0 + t2**2/280.0 - t2**3/15120.0 + t2**4/1330560.0
     
-    # Exact formula for moderate values
-    exact = 3.0 * (jnp.sin(t_scaled) - t_scaled * jnp.cos(t_scaled)) / (t_scaled**3)
+    safe_t = jnp.where(t_abs < 1e-10, 1.0, t_scaled)
+    exact = 3.0 * (jnp.sin(safe_t) - safe_t * jnp.cos(safe_t)) / (safe_t**3)
     
-    # Use Taylor for very small values, exact for moderate, zero for large
-    result = jnp.where(t_abs < 0.01, small_taylor, exact)
-    result = jnp.where(t_abs > 20.0, 0.0, result)  # High-frequency cutoff
+    alpha = 0.1 
+    transition = 0.5 * (1.0 + jnp.tanh((0.1 - t_abs) / alpha))
     
-    return jnp.clip(result, 0.0, 1.0)
+    result = transition * taylor + (1.0 - transition) * exact
+    
+    cutoff_scale = 20.0
+    cutoff = 0.5 * (1.0 + jnp.tanh((cutoff_scale - t_abs) / alpha))
+    result = result * cutoff
+    
+    result = jnp.clip(result, 0.0, 1.0)
+    
+    return result
 
 
 @partial(jax.jit, static_argnames=['kernel'])

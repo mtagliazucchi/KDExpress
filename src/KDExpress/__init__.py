@@ -4,7 +4,7 @@ Author: Matteo Tagliazucchi (https://github.com/mtagliazucchi)
 License: MIT
 """
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 __author__ = "Matteo Tagliazucchi"
 __license__ = "MIT"
 __url__ = "https://github.com/mtagliazucchi/KDExpress"
