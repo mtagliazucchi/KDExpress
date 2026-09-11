@@ -2,6 +2,7 @@ import jax
 import jax.numpy as jnp
 from functools import partial
 from .hist import build_hist_edges, hist1d
+from .utils import safe_div, safe_average, safe_sqrt, EPS
 
 # Common function
 
@@ -30,9 +31,9 @@ def silverman_bw1d(data, alpha=0.9):
 
 @jax.jit
 def weighted_std(data, weights):
-  mean = jnp.average(data, weights=weights)
-  variance = jnp.average((data - mean)**2, weights=weights)
-  return jnp.sqrt(variance)
+  mean = safe_average(data, weights=weights)
+  variance = safe_average((data - mean)**2, weights=weights)
+  return safe_sqrt(variance)
 
 @jax.jit
 def scott_bw1d(data, weights):
@@ -45,8 +46,9 @@ def scott_bw1d(data, weights):
   Returns:
     Estimated optimal bandwidth
   """
-  weights /= jnp.sum(weights)
-  neff = 1.0 / jnp.sum(jnp.power(weights, 2))
+  weights = safe_div(weights, jnp.sum(weights))
+  sum_w2 = jnp.sum(weights**2)
+  neff = safe_div(1.0, sum_w2) 
   bw = jnp.power(neff, -1. / (1 + 4))
   bw *= weighted_std(data, weights)
   return bw
@@ -125,9 +127,17 @@ def fft_kde1d(points, data, weights=None, bw=None, kernel='gaussian', bin_edges=
   #  jnp.allclose(jnp.diff(points), grid_step, atol=1e-6)
   #) slow down a lot the gpu usage
 
-  # Normalize weights
+  # Normalize weights to sum to 1. Downstream (hist1d's density branch,
+  # scott_bw1d) divides by sum(weights); when the raw weights sum to an
+  # astronomically small but nonzero number (e.g. an event whose samples
+  # sit far in the tail of the population model), the *value* of that
+  # division is still well-conditioned (numerator and denominator are
+  # comparably tiny), but its gradient carries an implicit 1/sum(weights)**2
+  # term that overflows float32 long before the raw sum itself would.
+  # Normalizing once here keeps every downstream sum O(1).
   if weights is None:
     weights = jnp.ones_like(data)
+  weights = safe_div(weights, jnp.sum(weights))
 
   # Build histogram edges if necessary
   if bin_edges is None:
@@ -154,7 +164,7 @@ def fft_kde1d(points, data, weights=None, bw=None, kernel='gaussian', bin_edges=
 
   # Mask negative value and normalize
   kde = jnp.where(kde < 0, 0.0, kde)
-  kde /= jnp.sum(kde) * grid_step
+  kde = safe_div(kde, jnp.sum(kde) * grid_step)
 
   return kde
 
@@ -187,9 +197,16 @@ def binned_kde1d(points,
   """
 
 
+  # Normalize weights up front (see fft_kde1d for why: binning then
+  # dividing by the *raw* bin sum carries a 1/sum(weights)**2 term in the
+  # gradient that overflows float32 well before sum(weights) itself would).
+  if weights is None:
+    weights = jnp.ones_like(data)
+  weights = safe_div(weights, jnp.sum(weights))
+
   # Binning
   new_weights, new_data_edges = hist1d(data, nbins, weights=weights, density=False)
-  new_weights /= jnp.sum(new_weights)
+  new_weights = safe_div(new_weights, jnp.sum(new_weights))
   new_data = 0.5*(new_data_edges[1:]+new_data_edges[:-1])
 
   # Bw selection
