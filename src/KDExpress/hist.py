@@ -5,6 +5,7 @@ from plum import dispatch
 from typing import List, Union
 import builtins
 import math
+from .utils import safe_div
 
 @jax.jit
 def build_hist_edges(bin_centers):
@@ -24,8 +25,8 @@ def build_hist_edges(bin_centers):
 
 @jax.jit
 def searchsorted_linear_spacing(x, y):
-  min_val = jnp.nanmin(x)
-  max_val = jnp.nanmax(x)
+  min_val = jnp.min(x)
+  max_val = jnp.max(x)
   n = jnp.sum(~jnp.isnan(x))-1 # len(x)-1
   idx = jnp.floor((y - min_val) / (max_val-min_val) * n)
   idx = jnp.clip(idx, 0, n-1).astype(int)
@@ -48,7 +49,7 @@ def hist1d(data, bins:jnp.ndarray, weights=None, density:bool=False):
   if density:
     bin_widths = bins[1] - bins[0]
     total_weight = jnp.sum(weights)
-    bin_counts /= (bin_widths * total_weight)
+    bin_counts = safe_div(bin_counts, bin_widths * total_weight)
 
   return bin_counts, bins
 
@@ -69,7 +70,7 @@ def hist1d(data, bins:int, weights=None, density:bool=False):
   if density:
     bin_widths = bin_edges[1] - bin_edges[0]
     total_weight = jnp.sum(weights)
-    bin_counts /= (bin_widths * total_weight)
+    bin_counts = safe_div(bin_counts, bin_widths * total_weight)
 
   return bin_counts, bin_edges
 
