@@ -2,7 +2,7 @@ import jax
 import jax.numpy as jnp
 from functools import partial
 from .hist import build_hist_edges, hist1d
-from .utils import safe_div, safe_average, safe_sqrt, EPS
+from .utils import safe_average
 
 # Common function
 
@@ -33,7 +33,7 @@ def silverman_bw1d(data, alpha=0.9):
 def weighted_std(data, weights):
   mean = safe_average(data, weights=weights)
   variance = safe_average((data - mean)**2, weights=weights)
-  return safe_sqrt(variance)
+  return jnp.sqrt(variance)
 
 @jax.jit
 def scott_bw1d(data, weights):
@@ -46,9 +46,9 @@ def scott_bw1d(data, weights):
   Returns:
     Estimated optimal bandwidth
   """
-  weights = safe_div(weights, jnp.sum(weights))
+  weights = weights / jnp.sum(weights)
   sum_w2 = jnp.sum(weights**2)
-  neff = safe_div(1.0, sum_w2) 
+  neff = 1.0 / sum_w2
   bw = jnp.power(neff, -1. / (1 + 4))
   bw *= weighted_std(data, weights)
   return bw
@@ -137,7 +137,7 @@ def fft_kde1d(points, data, weights=None, bw=None, kernel='gaussian', bin_edges=
   # Normalizing once here keeps every downstream sum O(1).
   if weights is None:
     weights = jnp.ones_like(data)
-  weights = safe_div(weights, jnp.sum(weights))
+  weights = weights / jnp.sum(weights)
 
   # Build histogram edges if necessary
   if bin_edges is None:
@@ -164,7 +164,7 @@ def fft_kde1d(points, data, weights=None, bw=None, kernel='gaussian', bin_edges=
 
   # Mask negative value and normalize
   kde = jnp.where(kde < 0, 0.0, kde)
-  kde = safe_div(kde, jnp.sum(kde) * grid_step)
+  kde = kde / (jnp.sum(kde) * grid_step)
 
   return kde
 
@@ -202,11 +202,11 @@ def binned_kde1d(points,
   # gradient that overflows float32 well before sum(weights) itself would).
   if weights is None:
     weights = jnp.ones_like(data)
-  weights = safe_div(weights, jnp.sum(weights))
+  weights = weights / jnp.sum(weights)
 
   # Binning
   new_weights, new_data_edges = hist1d(data, nbins, weights=weights, density=False)
-  new_weights = safe_div(new_weights, jnp.sum(new_weights))
+  new_weights = new_weights / jnp.sum(new_weights)
   new_data = 0.5*(new_data_edges[1:]+new_data_edges[:-1])
 
   # Bw selection

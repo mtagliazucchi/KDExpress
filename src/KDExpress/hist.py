@@ -5,7 +5,6 @@ from plum import dispatch
 from typing import List, Union
 import builtins
 import math
-from .utils import safe_div
 
 @jax.jit
 def build_hist_edges(bin_centers):
@@ -49,7 +48,7 @@ def hist1d(data, bins:jnp.ndarray, weights=None, density:bool=False):
   if density:
     bin_widths = bins[1] - bins[0]
     total_weight = jnp.sum(weights)
-    bin_counts = safe_div(bin_counts, bin_widths * total_weight)
+    bin_counts = bin_counts / (bin_widths * total_weight)
 
   return bin_counts, bins
 
@@ -70,7 +69,7 @@ def hist1d(data, bins:int, weights=None, density:bool=False):
   if density:
     bin_widths = bin_edges[1] - bin_edges[0]
     total_weight = jnp.sum(weights)
-    bin_counts = safe_div(bin_counts, bin_widths * total_weight)
+    bin_counts = bin_counts / (bin_widths * total_weight)
 
   return bin_counts, bin_edges
 
