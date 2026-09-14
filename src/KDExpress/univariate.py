@@ -30,10 +30,25 @@ def silverman_bw1d(data, alpha=0.9):
   return alpha * width * (ndata ** -0.2)
 
 @jax.jit
+def safe_sqrt(x):
+  """sqrt with a finite gradient everywhere, including at x <= 0.
+
+  jnp.sqrt's derivative (1/(2*sqrt(x))) is infinite at x=0, which poisons
+  gradients whenever variance collapses exactly to zero (e.g. an event whose
+  reweighted posterior samples concentrate onto a single effective sample,
+  n_eff -> 1). Uses a dtype-appropriate epsilon: a fixed constant like 1e-100
+  silently underflows to exactly 0.0 in float32 (min normal ~1.18e-38),
+  which is what broke the previous version of this guard.
+  """
+  eps = jnp.finfo(x.dtype).tiny
+  safe_x = jnp.where(x > 0, x, eps)      # never actually sqrt(0) or sqrt(neg) in the traced branch
+  return jnp.where(x > 0, jnp.sqrt(safe_x), 0.0)
+
+@jax.jit
 def weighted_std(data, weights):
   mean = safe_average(data, weights=weights)
   variance = safe_average((data - mean)**2, weights=weights)
-  return jnp.sqrt(variance)
+  return safe_sqrt(variance)
 
 @jax.jit
 def scott_bw1d(data, weights):
