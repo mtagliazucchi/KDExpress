@@ -2,6 +2,17 @@
 
 All notable changes to KDExpress will be documented in this file.
 
+## [0.2.3] - 2026-11-05
+
+### Fixed
+- `fft_kde2d` crashed when `weights=None`: default weights had shape (N, 2) instead of (N,).
+- `__all__` contained `' scott_bw3d'` (leading space), which broke `from KDExpress import *`; it now also exports `hist1d`, `histnd` and `scott_bw1d`.
+- `kernel='epanechnikov'` silently fell back to Gaussian. It is now accepted as an alias of `'epan'`, and unknown kernel names raise `ValueError`.
+- Removed a leftover placeholder `[project.scripts]` entry that installed a broken command.
+
+### Added
+- Test suite (`tests/`) and GitHub Actions CI with automatic PyPI publishing.
+
 ## [0.2.2] - 2026-08-11
 
 ### Fixed
