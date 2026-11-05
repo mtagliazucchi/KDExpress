@@ -105,7 +105,7 @@ def fft_kde2d(points_x, points_y, data, weights=None, bw=None, bin_edges=None):
 
   # Normalize weights
   if weights is None:
-    weights = jnp.ones_like(data)
+    weights = jnp.ones(data.shape[0], dtype=data.dtype)
   # assert len(weights) == len(data), "Weights lenght must match data lenght." # slow down gpu usage
   weights /= jnp.sum(weights)
 

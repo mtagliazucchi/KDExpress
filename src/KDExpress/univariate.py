@@ -6,6 +6,20 @@ from .utils import safe_average
 
 # Common function
 
+_KERNEL_ALIASES = {
+  'gaussian': 'gaussian', 'gauss': 'gaussian',
+  'epan': 'epan', 'epanechnikov': 'epan',
+}
+
+def _resolve_kernel(kernel):
+  """Map a user-facing kernel name to its internal name, rejecting unknown names."""
+  try:
+    return _KERNEL_ALIASES[str(kernel).lower()]
+  except KeyError:
+    raise ValueError(
+      f"Unknown kernel {kernel!r}. Use 'gaussian' or 'epan' (alias 'epanechnikov')."
+    ) from None
+
 @jax.jit
 def silverman_bw1d(data, alpha=0.9):
   """Silverman's rule of thumb bandwidth estimator for 1D datasets.
@@ -165,7 +179,7 @@ def fft_kde1d(points, data, weights=None, bw=None, kernel='gaussian', bin_edges=
   if bw is None:
     bw = scott_bw1d(data, weights)
 
-  if kernel == 'epan':
+  if _resolve_kernel(kernel) == 'epan':
     cf = cf_epan_kernel_1d
   else:
     cf = cf_gaussian_kernel_1d
@@ -203,7 +217,7 @@ def binned_kde1d(points,
     data: 1D array of input data points
     weights: Optional 1D array of weights for each data point (default: uniform weights)
     bw: Bandwidth value (if None, uses Silverman's rule)
-    kernel: Kernel type ('epan' for Epanechnikov, otherwise Gaussian)
+    kernel: Kernel type: 'gaussian' or 'epan' (alias 'epanechnikov')
     nbins: Number of bins for histogram approximation
     cut_sigma_data: If specified, reduce evaluation points beyond data support by this many standard deviations
 
@@ -238,7 +252,7 @@ def binned_kde1d(points,
     eff_points = points
 
   # Choose kernel and compute kernel values
-  kernel_fn   = _epan_kernel if kernel == 'epan' else _gaussian_kernel
+  kernel_fn   = _epan_kernel if _resolve_kernel(kernel) == 'epan' else _gaussian_kernel
   kernel_vals = kernel_fn((eff_points[:,None] - new_data) / bw)
 
   # Calculate KDE
