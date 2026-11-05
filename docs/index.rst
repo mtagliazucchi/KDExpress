@@ -20,5 +20,6 @@ automatic differentiation.
 
    installation
    quickstart
+   examples/index
    api
    changelog
