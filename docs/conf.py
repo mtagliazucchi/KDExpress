@@ -21,7 +21,13 @@ extensions = [
     "sphinx.ext.intersphinx",
     "myst_parser",
     "sphinx_copybutton",
+    "nbsphinx",
+    "nbsphinx_link",
 ]
+
+# Show the outputs saved in the notebooks; never execute them on the docs build
+# (the benchmark notebooks were run on a GPU).
+nbsphinx_execute = "never"
 
 autosummary_generate = True
 autodoc_member_order = "bysource"
@@ -34,7 +40,7 @@ intersphinx_mapping = {
 }
 
 source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
-exclude_patterns = ["_build"]
+exclude_patterns = ["_build", "**.ipynb_checkpoints"]
 
 html_theme = "furo"
 html_logo = "_static/logo.png"
