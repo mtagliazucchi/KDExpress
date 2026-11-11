@@ -10,6 +10,11 @@
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python"></a>
   <a href="https://github.com/google/jax"><img src="https://img.shields.io/badge/JAX-compatible-red" alt="JAX"></a>
+  <a href="https://kdexpress.readthedocs.io/en/latest/"><img src="https://img.shields.io/badge/docs-readthedocs-blue" alt="Documentation"></a>
+</p>
+
+<p align="center">
+  📖 Documentation: <a href="https://kdexpress.readthedocs.io/en/latest/">https://kdexpress.readthedocs.io/en/latest/</a>
 </p>
 
 

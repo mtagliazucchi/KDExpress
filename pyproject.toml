@@ -19,7 +19,7 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/mtagliazucchi/KDExpress"
 Repository = "https://github.com/mtagliazucchi/KDExpress"
-Documentation = "https://kdexpress.readthedocs.io"
+Documentation = "https://kdexpress.readthedocs.io/en/latest/"
 
 [tool.setuptools]
 packages = ["KDExpress"]
